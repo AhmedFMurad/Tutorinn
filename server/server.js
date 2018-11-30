@@ -10,7 +10,7 @@ const port = process.env.PORT || 3000;
 
 app.use(express.static(www));
 
-io.on("connection", () => {
+io.on("connection", (socket) => {
     console.log("User connected");
 });
 
