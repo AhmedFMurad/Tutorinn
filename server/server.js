@@ -14,7 +14,14 @@ app.use(express.static(www));
 
 io.on('connection', (socket) => {
     console.log("User connected");
+    socket.on('Message', (message) => {
+        console.log(message);
+    });
+    socket.emit('serverMessage', {
+        message: 'message'
+    });
 });
+
 
 server.listen(port, () => {
     console.log(`Server is up at ${port}`)
