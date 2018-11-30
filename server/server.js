@@ -10,6 +10,9 @@ const port = process.env.PORT || 3000;
 
 app.use(express.static(www));
 
+io.on("connection", () => {
+    console.log("User connected");
+});
 
 server.listen(port, () => {
     console.log(`Server is up at ${port}`)

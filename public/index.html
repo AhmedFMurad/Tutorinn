@@ -1,8 +1,16 @@
 <html>
     <head>
         <title>Tutorinn</title>
+        <script src="/socket.io/socket.io.js"></script>
     </head>
     <body>
         <h1 align="center">Welcome to Tutorinn!</h1>
+        <script>
+        var socket = io();
+        socket.on('connect',() => {
+            console.log("Connection!");
+        });
+        </script>
+
     </body>
 </html>
