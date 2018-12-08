@@ -1,11 +1,25 @@
+<!DOCTYPE html>
 <html>
-    <head>
-        <title>Tutorinn</title>
-        <script src="/socket.io/socket.io.js"></script>
-        <script src="/lib/js/site.js"></script>
-    </head>
-    <body>
-        <h1 align="center">Welcome to Tutorinn!</h1>
 
-    </body>
+<head>
+
+  <title>Test</title>
+
+  <link rel="stylesheet" href="/lib/css/stylesheet.css" />
+
+</head>
+
+<body>
+  <div id="videos">
+    <video id="localVideo" autoplay muted playsinline></video>
+    <video id="remoteVideo" autoplay playsinline></video>
+  </div>
+
+  <!-- This file is automatically added/served when running "node index.js". -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <script src="/lib/js/site.js"></script>
+
+</body>
+
 </html>
