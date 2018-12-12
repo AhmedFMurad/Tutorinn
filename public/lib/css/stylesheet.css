@@ -7,9 +7,10 @@ body {
     background: white;
     padding: 25px;
     border-radius: 20px;
-    width: 200px;
+    min-width: 200px;
     margin: 0 auto;
     box-shadow: 1px 2px #7b7979;
+    max-width: 250px;
 }
 
 .loginBox input {

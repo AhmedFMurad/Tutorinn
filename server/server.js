@@ -1,16 +1,39 @@
+/* Modules includes */
+
 const express = require('express');
 const path = require('path');
 const socketIO = require('socket.io');
 const http = require('http');
+const bodyparser = require('body-parser');
+const mongoose = require('mongoose');
+const _ = require('lodash');
+const mongodb = require('mongodb');
 
+/* DB Schemas includes */
+
+const {Student} = require('./db/student');
+const {Tutor} = require('./db/tutor.js');
+
+/* Initialize app */
 
 var app = express(); 
 var server = http.createServer(app);
 var io = socketIO(server);
-const www = path.join(__dirname, '../public');
+const www = path.join(__dirname, '../public/');
 const port = process.env.PORT || 3000;
 
 app.use(express.static(www));
+app.use(bodyparser.json());
+
+
+/* Database connection */
+
+if(process.env.MONGODB_URI){
+  mongoose.connect(process.env.MONGODB_URI);
+} else {
+  mongoose.connect("mongodb://localhost:27017/Tutorinn");
+}
+/* Handling calls with Socket.io */
 
 io.on('connection', (socket) => {
     console.log("User connected");
@@ -61,6 +84,40 @@ io.on('connection', (socket) => {
 });
 
 
+/* API endpoints */
+
+app.post('/student/create', (request , response) => {
+  console.log(request.body);
+  //response.status(200).send("Worked");
+  var student = new Student(request.body);
+
+  student.save().then(() => {
+    response.status(200).send(student.generateAuth());
+  })
+});
+
+app.get('/student/myaccount', (request, response) => {
+  console.log('student found!');
+});
+
+
+/* Webpage serving */
+
+app.get('/call', (request,response) => {
+  response.sendFile(www + "/call.html");
+});
+
+app.get('/login', (request,response) => {
+  response.sendFile(www + "/login.html");
+});
+
+app.get('/register', (request,response) => {
+  response.sendFile(www + "/login.html");
+});
+
+
+/* Start server at any port depending on environment */
+
 server.listen(port, () => {
-    console.log(`Server is up at ${port}`)
+    console.log(`Server is up at ${port}`);
 });
