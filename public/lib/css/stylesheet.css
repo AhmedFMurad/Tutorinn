@@ -1,5 +1,5 @@
 body {
-    background: #e2e2e2;
+    background-color: #e2e2e2;
     margin: 0;
 }
 
@@ -11,6 +11,7 @@ body {
     margin: 0 auto;
     box-shadow: 1px 2px #7b7979;
     max-width: 250px;
+    margin-top: 50px;
 }
 
 .loginBox input {
@@ -22,20 +23,14 @@ body {
 }
 
 .boxWrapperOuter {
-    display: table;
-    position: absolute;
-    top: 0;
-    left: 0;
+    /* top: 0; */
+    /* left: 0; */
     height: 100%;
     width: 100%;
-  }
-  
-  .boxWrapper {
-    display: table-cell;
-    vertical-align: middle;
-  }
+}
 
-  .welcomeMessage {
+
+.welcomeMessage {
     font-size: 25px;
     font-weight: bold;
     margin-bottom: 15px;
@@ -70,6 +65,7 @@ video#localVideo {
     max-width: 200px;
     z-index: 100;
 }
+
 * {
     box-sizing: border-box;
 }

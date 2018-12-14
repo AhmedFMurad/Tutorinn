@@ -8,7 +8,9 @@ const bodyparser = require('body-parser');
 const mongoose = require('mongoose');
 const _ = require('lodash');
 const mongodb = require('mongodb');
-
+const hbs = require('hbs');
+const sessions = require('express-session');
+const cookieparser = require('cookie-parser');
 /* DB Schemas includes */
 
 const {Student} = require('./db/student');
@@ -21,9 +23,24 @@ var server = http.createServer(app);
 var io = socketIO(server);
 const www = path.join(__dirname, '../public/');
 const port = process.env.PORT || 3000;
-
+app.use(bodyparser.urlencoded({ extended: true }));
 app.use(express.static(www));
 app.use(bodyparser.json());
+var partials = path.join(__dirname, '/../views/templates');
+hbs.registerPartials(partials);
+app.set('view engine', 'hbs');
+
+app.use(cookieparser());
+app.use(sessions({
+  key: 'user_secret',
+  secret: 'JKHJFSGSFKSFBJVLNOWRIUBWKJ',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+      expires: 60000
+  }
+}));
+
 
 
 /* Database connection */
@@ -36,7 +53,7 @@ if(process.env.MONGODB_URI){
 /* Handling calls with Socket.io */
 
 io.on('connection', (socket) => {
-    console.log("User connected");
+    console.log("User connected" + socket.id);
     socket.emit('serverMessage', {
         message: 'message'
     });
@@ -92,8 +109,10 @@ app.post('/student/create', (request , response) => {
   var student = new Student(request.body);
 
   student.save().then(() => {
-    response.status(200).send(student.generateAuth());
-  })
+    return student.generateAuth();
+  }).then((auth) => {
+    response.status(200).send(auth);
+  });
 });
 
 app.get('/student/myaccount', (request, response) => {
@@ -101,21 +120,146 @@ app.get('/student/myaccount', (request, response) => {
 });
 
 
+
+app.post('/tutor/create', (request , response) => {
+  console.log(request.body);
+  //response.status(200).send("Worked");
+  var tutor = new Tutor(request.body);
+
+  tutor.save().then(() => {
+    return tutor.generateAuth();
+  }).then((auth) => {
+    response.status(200).send(auth);
+  });
+});
+
 /* Webpage serving */
+var checkSession = (request, response, next) => {
+  if(request.session.email && request.cookies.user_secret){
+    response.redirect('/myaccount');
+  } 
+  next();
+}
 
-app.get('/call', (request,response) => {
-  response.sendFile(www + "/call.html");
+app.route('/')
+.get(checkSession, (request,response) => {
+  response.render("home.hbs", {
+    title: 'Home | Tutorinn',
+    homeActive: 'active'
+  });
 });
 
-app.get('/login', (request,response) => {
-  response.sendFile(www + "/login.html");
+app.route('/call')
+.get(checkSession, (request,response) => {
+  response.render("call.hbs", {
+    title: 'Video Call | Tutorinn'
+  });
 });
 
-app.get('/register', (request,response) => {
-  response.sendFile(www + "/login.html");
+app.route('/login')
+.get(checkSession, (request,response) => {
+  response.render("login.hbs", {
+    title: 'Student Login | Tutorinn',
+    studentLogin: 'active'
+  });
+})
+.post((request, response) => {
+  Student.login(request.body.email,request.body.password).then((student) => {
+    if(student){
+      request.session.email = student.email;
+      response.redirect('/myaccount');
+    }
+  }).catch((e) => {
+    response.render("login.hbs", {
+      title: 'Student Login | Tutorinn',
+      studentLogin: 'active',
+      loginError: 'Wrong email or password.'
+    });  
+  });
+ // response.status(200).send('login donezo');
 });
 
+app.route('/login/tutor')
+.get(checkSession, (request,response) => {
+  response.render("login.hbs", {
+    title: 'Tutor Login | Tutorinn',
+    tutorLogin: 'active'
+  });
+})
+.post((request, response) => {
+  Tutor.login(request.body.email,request.body.password).then((tutor) => {
+    if(tutor){
+      request.session.email = tutor.email;
+      response.redirect('/myaccount');
+    }
+  }).catch((e) => {
+    response.render("login.hbs", {
+      title: 'Tutor Login | Tutorinn',
+      tutorLogin: 'active',
+      loginError: 'Wrong email or password.'
+    });  
+  });
+});
 
+app.route('/register')
+.get(checkSession, (request,response) => {
+  response.render("register.hbs", {
+    title: 'Register | Tutorinn',
+    studentReg: 'active'
+  });
+})
+.post((request, response) => {
+  console.log(request.body);
+  var student = new Student(request.body);
+
+  student.save().then(() => {
+    request.session.email = student.email;
+    return student.jsonify();
+  }).then((student) => {
+    response.redirect('/myaccount');
+  });
+});
+
+app.route('/register/tutor')
+.get(checkSession, (request,response) => {
+  response.render("tutorRegister.hbs", {
+    title: 'Register Tutor | Tutorinn',
+    tutorReg: 'active'
+  });
+})
+.post((request, response) => {
+  console.log(request.body);
+  var tutor = new Tutor(request.body);
+
+  tutor.save().then(() => {
+    request.session.email = tutor.email;
+    return tutor.jsonify();
+  }).then(() => {
+    response.redirect('/myaccount');
+  });
+});
+
+app.route('/myaccount')
+.get((request, response) => {
+  var tutorsList = Tutor.getAll().then((tutors) => {
+    return tutors;
+  });
+  console.dir(tutorsList);
+  if(request.session.email && request.cookies.user_secret){
+  response.render("account.hbs", {
+    title: 'My Account | Tutorinn',
+    myAccountActive: 'active',
+    tutors: tutorsList
+  });
+} else {
+  response.redirect('/login');
+}
+});
+
+app.get('/logout', (request, response) => {
+  response.clearCookie('user_secret');
+  response.redirect('myaccount');
+})
 /* Start server at any port depending on environment */
 
 server.listen(port, () => {

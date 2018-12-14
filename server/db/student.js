@@ -11,33 +11,57 @@ var Schema = new mongoose.Schema({
         unique: true,
     },
     password: String,
-    auth: String,
     minutes: {
         type: Number,
         default: 0
     }
 });
 
-Schema.methods.generateAuth = function(){
-    var auth = webtoken.sign({_id: this._id.toHexString(), auth: 'auth'}, secret).toString();
+Schema.methods.generateAuth = function () {
+    var auth = webtoken.sign({
+        _id: this._id.toHexString(),
+        auth: 'auth'
+    }, secret).toString();
 
     this.auth = auth;
 
-    this.save().then(() => {
+    return this.save().then(() => {
         return auth;
     });
 }
 
-Schema.methods.logoutAuth = function(){
+Schema.methods.logoutAuth = function () {
     return this.update({
         $pull: auth
     });
 }
 
-Schema.pre('save', function(next) {
-    if(this.isModified('password')){
+Schema.methods.jsonify = function () {
+    return JSON.stringify(this);
+}
+
+Schema.statics.login = function (email, password) {
+    return this.findOne({
+        email
+    }).then((student) => {
+        if (!student) {
+            return Promise.reject();
+        }
+
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, student.password, (error, response) => {
+                if (response) {
+                    resolve(student);
+                } else {
+                    reject();
+                }
+            });
+        });
+    });
+}
+Schema.pre('save', function (next) {
+    if (this.isModified('password')) {
         bcrypt.genSalt(7, (error, salt) => {
-            console.log(this.password);
             bcrypt.hash(this.password, salt, (error, hash) => {
                 this.password = hash;
                 next();
@@ -46,24 +70,10 @@ Schema.pre('save', function(next) {
     } else {
         next();
     }
-    
+
 });
 
-Schema.statics.login = function(email, password){
-    return this.findOne({email}).then((stu) => {
-        if(stu == undefined){
-            return false;
-        }
-
-        bcrypt.compare(password, this.password, (error, response) => {
-            if(response){
-                return this;
-            } else {
-                return false;
-            }
-        });
-    });
-}
-
 var Student = mongoose.model('Student', Schema);
-module.exports = {Student};
+module.exports = {
+    Student
+};

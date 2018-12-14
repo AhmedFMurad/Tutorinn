@@ -1,0 +1,20 @@
+{{> header}}
+{{> guestnav}}
+<body>
+    <div class="boxWrapperOuter">
+        <div class="boxWrapper">
+            <div class="loginBox">
+                <div class="welcomeMessage">Welcome to Tutorinn!</div>
+                <form action="/register/tutor" method="post">
+                    <label>Email:</label>
+                    <input id="email" name="email" type="email" placeholder="Enter email" required>
+                    <label>Password:</label>
+                    <input id="password" name="password" type="password" placeholder="Enter password" required>
+                    <div class="text-center"><button class="btn btn-success">Register as Tutor!</button></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

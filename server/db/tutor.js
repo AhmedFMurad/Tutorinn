@@ -4,66 +4,86 @@ const validate = require('validator');
 const bcrypt = require('bcryptjs');
 const webtoken = require('jsonwebtoken');
 const secret = 'KJFSISFJHKKSJFSFKJHjkhsdjkhfskj';
+
 var Schema = new mongoose.Schema({
     email: {
         type: String,
         unique: true,
     },
     password: String,
-    auth: String,
     minutes: {
         type: Number,
         default: 0
-    },
-    testPassed: {
-        type: Boolean,
-        default: false
     }
 });
 
-Schema.methods.generateAuth = function(){
-    var auth = webtoken.sign({_id: this._id.toHexString(), auth: 'auth'}, secret).toString();
+Schema.methods.generateAuth = function () {
+    var auth = webtoken.sign({
+        _id: this._id.toHexString(),
+        auth: 'auth'
+    }, secret).toString();
 
     this.auth = auth;
 
-    this.save().then(() => {
+    return this.save().then(() => {
         return auth;
     });
 }
 
-Schema.methods.logoutAuth = function(){
+Schema.methods.logoutAuth = function () {
     return this.update({
         $pull: auth
     });
 }
 
-Schema.pre('save', () => {
-    if(this.isModified('password')){
-        bcrypt.genSalt(27, (error, salt) => {
-            bcrypt.hash(this.password, salt, (error, hash) => {
-                this.password = hash;
-                next()
-            });
-        });
-    }
-    next();
-});
+Schema.methods.jsonify = function () {
+    return JSON.stringify(this);
+}
 
-Schema.statics.login = function(email, password){
-    return this.findOne({email}).then((stu) => {
-        if(stu == undefined){
-            return false;
+Schema.statics.login = function (email, password) {
+    return this.findOne({
+        email
+    }).then((tutor) => {
+        if (!tutor) {
+            return Promise.reject();
         }
 
-        bcrypt.compare(password, this.password, (error, response) => {
-            if(response){
-                return this;
-            } else {
-                return false;
-            }
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, tutor.password, (error, response) => {
+                if (response) {
+                    resolve(tutor);
+                } else {
+                    reject();
+                }
+            });
         });
     });
 }
 
+Schema.statics.getAll = function() {
+    return this.find({}).select('email').then((tutors) => {
+        if(!tutors){
+            return false;
+        } else {
+            return Promise.resolve(tutors);
+        }
+    });
+}
+Schema.pre('save', function (next) {
+    if (this.isModified('password')) {
+        bcrypt.genSalt(7, (error, salt) => {
+            bcrypt.hash(this.password, salt, (error, hash) => {
+                this.password = hash;
+                next();
+            });
+        });
+    } else {
+        next();
+    }
+
+});
+
 var Tutor = mongoose.model('Tutor', Schema);
-module.exports = Tutor;
+module.exports = {
+    Tutor
+};
