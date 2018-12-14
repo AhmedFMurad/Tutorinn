@@ -12,11 +12,11 @@ var pcConfig = {
   'iceServers': [{
     'urls': 'stun:stun.l.google.com:19302'
   },
-  {
+  /* {
     'urls': 'turn:numb.viagenie.ca',
     'credential': 'lolax1993',
     'username': 'ahmadfayez93@gmail.com'
-  },
+  }, */
   {
     url: 'turn:192.158.29.39:3478?transport=tcp',
     credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
