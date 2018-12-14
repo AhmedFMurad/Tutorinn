@@ -9,19 +9,30 @@ var remoteStream;
 var turnReady;
 
 var pcConfig = {
-  'iceServers': [{
+  'iceServers': [
+    {"urls":"stun:global.stun.twilio.com:3478?transport=udp"},
+    {"urls":"turn:global.turn.twilio.com:3478?transport=udp",
+    "username":"d4cc1068982982bdd68f4fefaaaef2b31c1691f48a4ab4f71cf79edf0dfb6291",
+    "credential":"aXKyNmRu9fVENJgXkTPhTZuX6b5qwjRZMo/xRtu6DKw="},
+    {"urls":"turn:global.turn.twilio.com:3478?transport=tcp",
+    "username":"d4cc1068982982bdd68f4fefaaaef2b31c1691f48a4ab4f71cf79edf0dfb6291",
+    "credential":"aXKyNmRu9fVENJgXkTPhTZuX6b5qwjRZMo/xRtu6DKw="},
+    {"urls":"turn:global.turn.twilio.com:443?transport=tcp",
+    "username":"d4cc1068982982bdd68f4fefaaaef2b31c1691f48a4ab4f71cf79edf0dfb6291",
+    "credential":"aXKyNmRu9fVENJgXkTPhTZuX6b5qwjRZMo/xRtu6DKw="}]
+    /*  [{
     'urls': 'stun:stun.l.google.com:19302'
   },
-  /* {
+  {
     'urls': 'turn:numb.viagenie.ca',
     'credential': 'lolax1993',
     'username': 'ahmadfayez93@gmail.com'
-  }, */
+  },
   {
     url: 'turn:192.158.29.39:3478?transport=tcp',
     credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
     username: '28224511:1379330808'
-  }/* ,
+  },
   {
     url: 'turn:turn.anyfirewall.com:443?transport=tcp',
     credential: 'webrtc',
@@ -31,7 +42,7 @@ var pcConfig = {
     urls: "turn:13.250.13.83:3478?transport=udp",
     username: "YzYNCouZM1mhqhmseWk6",
     credential: "YzYNCouZM1mhqhmseWk6"
-    } */]
+    }]  */
 };
 
 // Set up audio and video regardless of what devices are present.
